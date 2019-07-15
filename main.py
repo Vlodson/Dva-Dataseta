@@ -153,8 +153,8 @@ while i <= learn_iter:
 
 
 
-    # if i == int(learn_iter/10):
-    #     print("{} iteracija od {}".format(i, learn_iter))
+    if i == learn_iter/100:
+         print("{} iteracija od {}".format(i, learn_iter))
 
     i += 1
 #===============================================================================
