@@ -1,37 +1,47 @@
 import numpy as np
 from scipy.io import wavfile
+from scipy import signal
 import os
 
 
-sounds = []
+pre_fft_sounds = []
 sound_labels = []
 
-for i in os.listdir("Snd_data/Training/all"):
-    fs, data = wavfile.read("Snd_data/Training/all/{}".format(i))
-    sounds.append(data)
+for i in os.listdir("all_snd"):
+    fs, data = wavfile.read("all_snd/{}".format(i))
+    pre_fft_sounds.append(data)
 
-sounds = np.array(sounds)
+pre_fft_sounds = np.array(pre_fft_sounds)
 
 
 def labels(path, label, arr):
     for i in os.listdir("Snd_data/Training/{}".format(path)):
         arr.append(label)
 
-labels("cello", 1, sound_labels)
-labels("flute", 2, sound_labels)
-labels("sax", 3, sound_labels)
-labels("violin", 4, sound_labels)
+labels("cello", [1,0,0,0], sound_labels)
+labels("flute", [0,1,0,0], sound_labels)
+labels("sax", [0,0,1,0], sound_labels)
+labels("violin", [0,0,0,1], sound_labels)
 
-for i in range(len(sounds)):
-    rand = np.random.randint(0, len(sounds))
+for i in range(len(pre_fft_sounds)):
+    rand = np.random.randint(0, len(pre_fft_sounds))
 
-    temp = sounds[i]
-    sounds[i] = sounds[rand]
-    sounds[rand] = temp
+    temp = pre_fft_sounds[i]
+    pre_fft_sounds[i] = pre_fft_sounds[rand]
+    pre_fft_sounds[rand] = temp
 
     temp = sound_labels[i]
     sound_labels[i] = sound_labels[rand]
     sound_labels[rand] = temp
 
-for i in sounds:
-    i = np.fft.fft2(i)
+pre_fft_sounds = pre_fft_sounds.reshape(pre_fft_sounds.shape[0], pre_fft_sounds.shape[2], pre_fft_sounds.shape[1])
+
+sounds = []
+
+for i in range(pre_fft_sounds.shape[0]):
+    sounds.append(signal.spectrogram(pre_fft_sounds[i])[2])
+
+sounds = np.array(sounds)
+sounds = sounds.reshape(sounds.shape[0], sounds.shape[1]*sounds.shape[2], sounds.shape[3])
+
+sounds = (sounds - np.min(sounds)) / (np.max(sounds) - np.min(sounds))

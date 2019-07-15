@@ -1,49 +1,53 @@
-""" Ova skripta sluzi za ucitavanje, preprocesiranje slika, pravljenje labela i
+""" Ova skripta sluzi za ucitavanje, pravljenje labela i
 pravljenje trening seta sa nasumicno rasporedjenim trening slikama + iz trening
-slika pravljenje seta za trening testiranja i pravljenje test seta
-1 je za cello, 2 je flute, 3 je sax, 4 je violin"""
+slika pravljenje seta za trening testiranja i pravljenje test seta (ovo poslednje je mozda)
+1 je za cello, 2 je sax, 3 je violin """
 
 import numpy as np
 from PIL import Image
 import os
 
 
-# preko os.listdir uzima sve u folderu i appenduje ih na listu instrumenta tako
-# uzimajuci sve slike iz foldera. Sa asarray delom pretvaram sliku odma u np.arr
-# jos jednom labele: 1 - cello   2 - flute   3 - sax   4 - violin
-def ucitavanje(instrument, path, br_labele):
-    inst = []
-    inst_label = []
+# sa listdir idem u folder location, sa i idem kroz iteme u folderu i svaki
+# appendujem na images (odnosno svaku sliku dodajem na listu slika)
+images = []
 
-    for i in os.listdir("Img_data/{}/{}".format(path, instrument)):
-        inst.append(np.asarray(Image.open("Img_data/{}/{}/{}".format(path, instrument, i))))
-        inst_label.append("{}".format(br_labele))
+for i in os.listdir("all_img"):
+    images.append(np.asarray(Image.open("all_img/{}".format(i)).convert('LA')))
 
-    return inst, inst_label
+images = np.array(images)
+images = images[:,:,:,0]
+images = images / np.max(images)
 
-
-cello, cello_label = ucitavanje("cello", "Training", 1)
-flute, flute_label = ucitavanje("flute", "Training", 2)
-sax, flute_label = ucitavanje("sax", "Training", 3)
-violin, flute_label = ucitavanje("violin", "Training", 4)
+#===============================================================================
 
 
-# array mora da bude
-def color_filter(rmin, rmax, gmin, gmax, bmin, bmax, array):
-    for i in range(np.shape(array)[0]):
-        array[i].setflags(write = 1)
-        for j in range(np.shape(array)[1]):
-            for k in range(np.shape(array)[2]):
-                if array[i][j][k][0] >= rmin/2 or array[i][j][k][0] <= rmax/2:
-                    array[i][j][k][0] = 0
-                if array[i][j][k][1] >= gmin/2 or array[i][j][k][1] <= gmax/2:
-                    array[i][j][k][1] = 0
-                if array[i][j][k][2] >= bmin/2 or array[i][j][k][2] <= bmax/2:
-                    array[i][j][k][2] = 0
+# pravim listu labela tako sto za svaki item iz foldera insturmenta appendujem
+# labelu na listu
+def label(path, label, arr):
+    for i in os.listdir("Img_data/Training/{}".format(path)):
+        arr.append(label)
 
-    return array
+image_labels = []
 
-cello = color_filter(90, 255, 73, 217, 50, 165, cello)
-flute = color_filter(117, 255, 107, 255, 95, 255, flute)
-sax = color_filter(90, 255, 90, 255, 0, 6, sax)
-violin = color_filter(90, 255, 73, 217, 50, 165, violin)
+label("cello", [1,0,0,0], image_labels)
+label("flute", [0,1,0,0], image_labels)
+label("sax", [0,0,1,0], image_labels)
+label("violin", [0,0,0,1], image_labels)
+
+#===============================================================================
+
+# shuffleujem slike i njihove labele zbog boljeg ucenja CNN-a, obicnom zamenom
+# dva random elementa
+for i in range(len(images)):
+    rand = np.random.randint(0, len(images))
+
+    temp = images[i]
+    images[i] = images[rand]
+    images[rand] = temp
+
+    temp = image_labels[i]
+    image_labels[i] = image_labels[rand]
+    image_labels[rand] = temp
+
+#===============================================================================
