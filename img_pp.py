@@ -39,15 +39,15 @@ label("violin", [0,0,0,1], image_labels)
 
 # shuffleujem slike i njihove labele zbog boljeg ucenja CNN-a, obicnom zamenom
 # dva random elementa
-for i in range(len(images)):
-    rand = np.random.randint(0, len(images))
-
-    temp = images[i]
-    images[i] = images[rand]
-    images[rand] = temp
-
-    temp = image_labels[i]
-    image_labels[i] = image_labels[rand]
-    image_labels[rand] = temp
+# for i in range(len(images)):
+#     rand = np.random.randint(0, len(images))
+#
+#     temp = images[i]
+#     images[i] = images[rand]
+#     images[rand] = temp
+#
+#     temp = image_labels[i]
+#     image_labels[i] = image_labels[rand]
+#     image_labels[rand] = temp
 
 #===============================================================================

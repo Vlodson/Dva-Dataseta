@@ -44,6 +44,6 @@ class output():
             d_W[i] = d_out[i].reshape(d_out[i].shape[0], 1).dot(this_layer[i].reshape(1, this_layer[i].shape[0])).T # ako padne error vrv je .T jedan od ova dva, vrv drugi
             # izvod za softmax sam uzeo samo softam(1-softmax) bmk
             d_data[i] = W[i].dot(d_out[i].T) * output.d_sigmoid(this_layer[i])
-        W += d_W * lr
+        W = W*0.85 + d_W * lr # MOMENTUM TI JE 0.85 VIDETI SAJT: http://ruder.io/optimizing-gradient-descent/index.html#momentum
 
         return d_data, W

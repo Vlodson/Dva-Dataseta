@@ -95,7 +95,7 @@ class convo():
             # bias je samo suma slopa outputa za taj layer
             d_bias = np.sum(d_prev_ly[i])
 
-        filter[2] += d_filter * lr
+        filter[2] = filter[2]*0.85 + d_filter * lr # gama = 0.85, videti output.py
         bias += d_bias * lr
 
 

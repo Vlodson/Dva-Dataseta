@@ -52,6 +52,6 @@ class full_layer():
             d_data[i] = W[i].dot(d_prev_ly[i]) * full_layer.d_sigmoid(this_layer[i])
             #d_bias = isto ko kod convo. receno mi da vidim bez bias
 
-        W += d_W * lr
+        W = W*0.85 + d_W * lr # gama = 0.85, videti output.py
 
         return d_data, W

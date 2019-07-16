@@ -23,16 +23,16 @@ labels("flute", [0,1,0,0], sound_labels)
 labels("sax", [0,0,1,0], sound_labels)
 labels("violin", [0,0,0,1], sound_labels)
 
-for i in range(len(pre_fft_sounds)):
-    rand = np.random.randint(0, len(pre_fft_sounds))
-
-    temp = pre_fft_sounds[i]
-    pre_fft_sounds[i] = pre_fft_sounds[rand]
-    pre_fft_sounds[rand] = temp
-
-    temp = sound_labels[i]
-    sound_labels[i] = sound_labels[rand]
-    sound_labels[rand] = temp
+# for i in range(len(pre_fft_sounds)):
+#     rand = np.random.randint(0, len(pre_fft_sounds))
+#
+#     temp = pre_fft_sounds[i]
+#     pre_fft_sounds[i] = pre_fft_sounds[rand]
+#     pre_fft_sounds[rand] = temp
+#
+#     temp = sound_labels[i]
+#     sound_labels[i] = sound_labels[rand]
+#     sound_labels[rand] = temp
 
 pre_fft_sounds = pre_fft_sounds.reshape(pre_fft_sounds.shape[0], pre_fft_sounds.shape[2], pre_fft_sounds.shape[1])
 
