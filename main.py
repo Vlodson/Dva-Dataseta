@@ -19,8 +19,8 @@ def write_data(file_name, data):
 
 
 # randomizuje redosled podataka
-for i in range(len(images)):
-    rand = np.random.randint(0, len(images))
+for i in range(len(sounds)):
+    rand = np.random.randint(0, len(sounds))
 
     temp_i = images[i]
     images[i] = images[rand]
@@ -39,7 +39,7 @@ for i in range(len(images)):
     sound_labels[i] = sound_labels[rand]
     sound_labels[rand] = temp_s
 #===============================================================================
-num_data = image.shape[0] # upises obicno broj, ali ako hoces sve, onda data.shape[0]
+num_data = 10 # upises obicno broj, ali ako hoces sve, onda data.shape[0]
 
 images = images[:num_data]
 image_labels = image_labels[:num_data]
