@@ -4,7 +4,9 @@ from maxpool import MP
 from full import full_layer
 from output import output
 from img_pp import images, image_labels
+print("slike ucitane")
 from snd_pp import sounds, sound_labels
+print("zvuk ucitan")
 import datetime
 import matplotlib.pyplot as plt
 #===============================================================================
@@ -50,7 +52,7 @@ sound_labels = sound_labels[:num_data] # nzm da li treba ovo uopste
 
 labels = 4 # violina, sax, violoncelo, flauta
 lr = 0.000000001 # learn rate, treba da bude mali za pomeranje po slopeovima
-learn_iter = 100 # za broj iteracija ucenja
+learn_iter = 20 # za broj iteracija ucenja
 i = 1
 
 # prve random var
@@ -210,6 +212,8 @@ while i <= learn_iter:
 
         W1_snd_best = W1_snd
         W2_snd_best = W2_snd
+
+        Wo_best = Wo
     #---
 
     Loss.append(Loss_now)
@@ -234,9 +238,11 @@ write_data("W_b/Image/bias2_img.csv", bias2_img_best)
 write_data("W_b/Image/W1_img.csv", W1_img_best.reshape(W1_img_best.shape[0], W1_img_best.shape[1]*W1_img_best.shape[2]))
 write_data("W_b/Image/W2_img.csv", W2_img_best.reshape(W2_img_best.shape[0], W2_img_best.shape[1]*W2_img_best.shape[2]))
 
-write_data("W_b/Sound/filter1_img.csv", filter1_snd_best[2])
-write_data("W_b/Sound/filter2_img.csv", filter2_snd_best[2])
-write_data("W_b/Sound/bias1_img.csv", bias1_snd_best)
-write_data("W_b/Sound/bias2_img.csv", bias2_snd_best)
-write_data("W_b/Sound/W1_img.csv", W1_snd_best.reshape(W1_snd_best.shape[0], W1_snd_best.shape[1]*W1_snd_best.shape[2]))
-write_data("W_b/Sound/W2_img.csv", W2_snd_best.reshape(W2_snd_best.shape[0], W2_snd_best.shape[1]*W2_snd_best.shape[2]))
+write_data("W_b/Sound/filter1_snd.csv", filter1_snd_best[2])
+write_data("W_b/Sound/filter2_snd.csv", filter2_snd_best[2])
+write_data("W_b/Sound/bias1_snd.csv", bias1_snd_best)
+write_data("W_b/Sound/bias2_snd.csv", bias2_snd_best)
+write_data("W_b/Sound/W1_snd.csv", W1_snd_best.reshape(W1_snd_best.shape[0], W1_snd_best.shape[1]*W1_snd_best.shape[2]))
+write_data("W_b/Sound/W2_snd.csv", W2_snd_best.reshape(W2_snd_best.shape[0], W2_snd_best.shape[1]*W2_snd_best.shape[2]))
+
+write_data("W_b/Wo.csv", Wo_best.reshape(Wo_best.shape[0], Wo_best.shape[1]*Wo_best.shape[2]))
