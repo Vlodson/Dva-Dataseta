@@ -5,6 +5,8 @@ from full import full_layer
 from output import output
 from img_pp import images, image_labels
 from snd_pp import sounds, sound_labels
+import datetime
+import matplotlib.pyplot as plt
 #===============================================================================
 
 # file writing
@@ -15,25 +17,50 @@ def write_data(file_name, data):
         np.savetxt(fn, data, delimiter = ',')
 #===============================================================================
 
-images = images # menjaj za testiranje
-image_labels = image_labels
 
-sounds = sounds
-sound_labels = sound_labels # nzm da li treba ovo uopste
+# randomizuje redosled podataka
+for i in range(len(images)):
+    rand = np.random.randint(0, len(images))
 
-labels = 4
-lr = 0.000001 # learn rate, treba da bude mali za pomeranje po slopeovima
-learn_iter = 10000 # za broj iteracija ucenja
+    temp_i = images[i]
+    images[i] = images[rand]
+    images[rand] = temp_i
+
+    temp_i = image_labels[i]
+    image_labels[i] = image_labels[rand]
+    image_labels[rand] = temp_i
+    #---
+
+    temp_s = sounds[i]
+    sounds[i] = sounds[rand]
+    sounds[rand] = temp_s
+
+    temp_s = sound_labels[i]
+    sound_labels[i] = sound_labels[rand]
+    sound_labels[rand] = temp_s
+#===============================================================================
+num_data = image.shape[0] # upises obicno broj, ali ako hoces sve, onda data.shape[0]
+
+images = images[:num_data]
+image_labels = image_labels[:num_data]
+
+sounds = sounds[:num_data]
+sound_labels = sound_labels[:num_data] # nzm da li treba ovo uopste
+#===============================================================================
+
+labels = 4 # violina, sax, violoncelo, flauta
+lr = 0.000000001 # learn rate, treba da bude mali za pomeranje po slopeovima
+learn_iter = 100 # za broj iteracija ucenja
 i = 1
 
 # prve random var
-filter1_img = (6, 6, np.random.randn(6,6))
-filter1_snd = (6, 6, np.random.randn(6,6))
+filter1_img = (15, 15, np.random.randn(15,15))
+filter1_snd = (10, 22, np.random.randn(10,22))
 bias1_img = np.zeros((1,1))
 bias1_snd = np.zeros((1,1))
 #---
-filter2_img = (4, 4, np.random.randn(4, 4))
-filter2_snd = (4, 4, np.random.randn(4, 4))
+filter2_img = (3, 3, np.random.randn(3, 3))
+filter2_snd = (4, 8, np.random.randn(4, 8))
 bias2_img = np.zeros((1,1))
 bias2_snd = np.zeros((1,1))
 
@@ -42,6 +69,11 @@ ly1_img = 8
 ly1_snd = 8
 
 ly2 = 10
+
+Loss = []
+Loss_prev = 1000000 # posto gledam da li je Loss_now manji od Loss_prev,
+Loss_now = 1000000 #  ako ih stavim na 0 na pocetku, bice Loss_prev uvek manji
+Loss_iter = []
 # ly2_img = 6
 # ly2_snd = 6
 
@@ -49,34 +81,39 @@ labels_img = np.shape(image_labels)[1]
 labels_snd = np.shape(sound_labels)[1]
 #===============================================================================
 
+print("Start: ", datetime.datetime.now().time())
+
 while i <= learn_iter:
 
+    # za ispis podataka dole
+    Loss_prev = Loss_now
+
     """ FEEDFORWARD """
-    c1_img = convo(images, filter1_img, (3,3), bias1_img)
+    c1_img = convo(images, filter1_img, (9,9), bias1_img)
     c1_img.convolution()
 
-    c1_snd = convo(sounds, filter1_snd, (3,2), bias1_snd)
+    c1_snd = convo(sounds, filter1_snd, (8,8), bias1_snd)
     c1_snd.convolution()
     #---
 
-    m1_img = MP(c1_img.out, (3,3), (2,2))
+    m1_img = MP(c1_img.out, (2,2), (1,1))
     m1_img.maxpooling()
 
-    m1_snd = MP(c1_snd.out, (3,3), (2,2))
+    m1_snd = MP(c1_snd.out, (1,2), (1,2))
     m1_snd.maxpooling()
     #---
 
-    c2_img = convo(m1_img.out, filter2_img, (2,2), bias2_img)
+    c2_img = convo(m1_img.out, filter2_img, (1,1), bias2_img)
     c2_img.convolution()
 
     c2_snd = convo(m1_snd.out, filter2_snd, (2,2), bias2_snd)
     c2_snd.convolution()
     #---
 
-    m2_img = MP(c2_img.out, (4,4), (2,2))
+    m2_img = MP(c2_img.out, (2,2), (1,1))
     m2_img.maxpooling()
 
-    m2_snd = MP(c2_snd.out, (4,4), (2,2))
+    m2_snd = MP(c2_snd.out, (3,3), (2,2))
     m2_snd.maxpooling()
     #---
 
@@ -111,6 +148,7 @@ while i <= learn_iter:
     #---
 
     o = output(f2.out, Wo, labels, image_labels)
+    o.out[o.out <= 0] = 0
     #===============================================
 
     """ BACKPROPAGATION """
@@ -133,42 +171,72 @@ while i <= learn_iter:
     d_f1_img = d_f1_img.reshape(d_f1_img.shape[0], m2_img.out.shape[1], m2_img.out.shape[2])
     d_f1_snd = d_f1_snd.reshape(d_f1_snd.shape[0], m2_snd.out.shape[1], m2_snd.out.shape[2])
 
-    d_m2_img = m2_img.mp_backpropagation(d_f1_img, m2_img.data, (4,4), (2,2))
-    d_m2_snd = m2_snd.mp_backpropagation(d_f1_snd, m2_snd.data, (4,4), (2,2))
+    d_m2_img = m2_img.mp_backpropagation(d_f1_img, m2_img.data, (2,2), (1,1))
+    d_m2_snd = m2_snd.mp_backpropagation(d_f1_snd, m2_snd.data, (3,3), (2,2))
     #---
 
-    d_c2_img, filter2_img, bias2_img = c2_img.convo_backpropagation(d_m2_img, c2_img.data, list(filter2_img), bias2_img, (3,3), lr) # filter mora u list jer tupple ne da da se menjaju stvari
-    d_c2_snd, filter2_snd, bias2_snd = c2_snd.convo_backpropagation(d_m2_snd, c2_snd.data, list(filter2_snd), bias2_snd, (3,3), lr)
+    d_c2_img, filter2_img, bias2_img = c2_img.convo_backpropagation(d_m2_img, c2_img.data, list(filter2_img), bias2_img, (1,1), lr) # filter mora u list jer tupple ne da da se menjaju stvari
+    d_c2_snd, filter2_snd, bias2_snd = c2_snd.convo_backpropagation(d_m2_snd, c2_snd.data, list(filter2_snd), bias2_snd, (2,2), lr)
     #---
 
-    d_m1_img = m1_img.mp_backpropagation(d_c2_img, m1_img.data, (3,3), (2,2))
-    d_m1_snd = m1_snd.mp_backpropagation(d_c2_snd, m1_snd.data, (3,3), (2,2))
+    d_m1_img = m1_img.mp_backpropagation(d_c2_img, m1_img.data, (2,2), (1,1))
+    d_m1_snd = m1_snd.mp_backpropagation(d_c2_snd, m1_snd.data, (1,2), (1,2))
     #---
 
-    d_c1_img, filter1_img, bias1_img = c1_img.convo_backpropagation(d_m1_img, c1_img.data, list(filter1_img), bias1_img, (3,3), lr) # filter u listu ne tupple
-    d_c1_snd, filter1_snd, bias1_snd = c1_snd.convo_backpropagation(d_m1_snd, c1_snd.data, list(filter1_snd), bias1_snd, (3,3), lr)
+    d_c1_img, filter1_img, bias1_img = c1_img.convo_backpropagation(d_m1_img, c1_img.data, list(filter1_img), bias1_img, (9,9), lr) # filter u listu ne tupple
+    d_c1_snd, filter1_snd, bias1_snd = c1_snd.convo_backpropagation(d_m1_snd, c1_snd.data, list(filter1_snd), bias1_snd, (8,8), lr)
     #===============================================
 
-    #print(np.where(o.out[0] == np.max(o.out[0]))[0][0], image_labels[0].index(max(image_labels[0])), i,"\n") printuje prediction + label
+    Loss_now = o.CE_Loss(o.out, image_labels)
+    #---
 
+    # za cuvanje najboljih tezina, tj. tamo gde je loss bio najmanji
+    if Loss_now < Loss_prev:
+        filter1_img_best = filter1_img
+        filter2_img_best = filter2_img
 
+        bias1_img_best = bias1_img
+        bias2_img_best = bias2_img
 
-    if i == learn_iter/100:
-         print("{} iteracija od {}".format(i, learn_iter))
+        W1_img_best = W1_img
+        W2_img_best = W2_img
+        #---
+
+        filter1_snd_best = filter1_snd
+        filter2_snd_best = filter2_snd
+
+        bias1_snd_best = bias1_snd
+        bias2_snd_best = bias2_snd
+
+        W1_snd_best = W1_snd
+        W2_snd_best = W2_snd
+    #---
+
+    Loss.append(Loss_now)
+    Loss_iter.append(i)
+
+    if ((i/(learn_iter/10)).is_integer() == True) and (i/(learn_iter/10) != 0.0):
+        #print(np.where(o.out[0] == np.max(o.out[0]))[0][0], image_labels[0].index(max(image_labels[0])), i)
+        print("{} iteracija od {}".format(i, learn_iter))
+        print("Loss = {}".format(Loss_now), "\n")
 
     i += 1
 #===============================================================================
+print("Finish: ", datetime.datetime.now().time(), "\n")
 
-write_data("W_b/Image/filter1_img.csv")
-write_data("W_b/Image/filter2_img.csv")
-write_data("W_b/Image/bias1_img.csv")
-write_data("W_b/Image/bias2_img.csv")
-write_data("W_b/Image/W1_img.csv")
-write_data("W_b/Image/W2_img.csv")
+plt.plot(Loss_iter, Loss, 'b-')
+plt.show()
 
-write_data("W_b/Sound/filter1_img.csv")
-write_data("W_b/Sound/filter2_img.csv")
-write_data("W_b/Sound/bias1_img.csv")
-write_data("W_b/Sound/bias2_img.csv")
-write_data("W_b/Sound/W1_img.csv")
-write_data("W_b/Sound/W2_img.csv")
+write_data("W_b/Image/filter1_img.csv", filter1_img_best[2])
+write_data("W_b/Image/filter2_img.csv", filter2_img_best[2])
+write_data("W_b/Image/bias1_img.csv", bias1_img_best)
+write_data("W_b/Image/bias2_img.csv", bias2_img_best)
+write_data("W_b/Image/W1_img.csv", W1_img_best.reshape(W1_img_best.shape[0], W1_img_best.shape[1]*W1_img_best.shape[2]))
+write_data("W_b/Image/W2_img.csv", W2_img_best.reshape(W2_img_best.shape[0], W2_img_best.shape[1]*W2_img_best.shape[2]))
+
+write_data("W_b/Sound/filter1_img.csv", filter1_snd_best[2])
+write_data("W_b/Sound/filter2_img.csv", filter2_snd_best[2])
+write_data("W_b/Sound/bias1_img.csv", bias1_snd_best)
+write_data("W_b/Sound/bias2_img.csv", bias2_snd_best)
+write_data("W_b/Sound/W1_img.csv", W1_snd_best.reshape(W1_snd_best.shape[0], W1_snd_best.shape[1]*W1_snd_best.shape[2]))
+write_data("W_b/Sound/W2_img.csv", W2_snd_best.reshape(W2_snd_best.shape[0], W2_snd_best.shape[1]*W2_snd_best.shape[2]))
