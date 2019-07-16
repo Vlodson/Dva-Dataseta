@@ -41,7 +41,7 @@ for i in range(len(sounds)):
     sound_labels[i] = sound_labels[rand]
     sound_labels[rand] = temp_s
 #===============================================================================
-num_data = 10 # upises obicno broj, ali ako hoces sve, onda data.shape[0]
+num_data = images.shape[0] # upises obicno broj, ali ako hoces sve, onda data.shape[0]
 
 images = images[:num_data]
 image_labels = image_labels[:num_data]
@@ -52,7 +52,7 @@ sound_labels = sound_labels[:num_data] # nzm da li treba ovo uopste
 
 labels = 4 # violina, sax, violoncelo, flauta
 lr = 0.000000001 # learn rate, treba da bude mali za pomeranje po slopeovima
-learn_iter = 20 # za broj iteracija ucenja
+learn_iter = 100 # za broj iteracija ucenja
 i = 1
 
 # prve random var
@@ -222,9 +222,11 @@ while i <= learn_iter:
     if ((i/(learn_iter/10)).is_integer() == True) and (i/(learn_iter/10) != 0.0):
         #print(np.where(o.out[0] == np.max(o.out[0]))[0][0], image_labels[0].index(max(image_labels[0])), i)
         print("{} iteracija od {}".format(i, learn_iter))
+        print("Vreme: ", datetime.datetime.now().time())
         print("Loss = {}".format(Loss_now), "\n")
 
     i += 1
+    print(i)
 #===============================================================================
 print("Finish: ", datetime.datetime.now().time(), "\n")
 
