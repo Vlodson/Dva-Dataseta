@@ -87,7 +87,7 @@ print("Start: ", datetime.datetime.now().time())
 
 while i <= learn_iter:
 
-    print(i)    
+    print(i)
     # za ispis podataka dole
     Loss_prev = Loss_now
 
@@ -227,13 +227,12 @@ while i <= learn_iter:
         print("Loss = {}".format(Loss_now), "\n")
 
     i += 1
-
 #===============================================================================
 print("Finish: ", datetime.datetime.now().time(), "\n")
 
 # za server je ovo iskomentarisano
-plt.plot(Loss_iter, Loss, 'b-')
-plt.show()
+# plt.plot(Loss_iter, Loss, 'b-')
+# plt.show()
 
 write_data("W_b/Image/filter1_img.csv", filter1_img_best[2])
 write_data("W_b/Image/filter2_img.csv", filter2_img_best[2])

@@ -8,7 +8,7 @@ print("podaci ucitani")
 import datetime
 import matplotlib.pyplot as plt
 
-num_data = 10 # upises obicno broj, ali ako hoces sve, onda data.shape[0]
+num_data = images.shape[0] # upises obicno broj, ali ako hoces sve, onda data.shape[0]
 
 images = images[:num_data]
 image_labels = image_labels[:num_data]
