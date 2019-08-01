@@ -21,37 +21,40 @@ class full_layer():
 
         #tehnicki je samo ovo forwardfeed
         for i in range(self.data.shape[0]):
-            self.out[i] = self.data[i].reshape(1, self.data[i].shape[0], ).dot(self.W[i]) #+ self.bias[i]
+            self.out[i] = self.data[i].dot(self.W) #+ self.bias
+        self.out = self.out/np.mean(self.out)
         #self.out[self.out <= 0] = 0 # ReLU je legit jedna linija lmao i nema izvod (tj dReLU/dx = 1)
 
 
-        self.out = full_layer.sigmoid(self.out)
+        #self.out = full_layer.sigmoid(self.out)
 #===============================================================================
 
-    @staticmethod
-    def sigmoid(data):
-        return 1/(1 + np.exp(-1*data))
-
-    @staticmethod
-    def d_sigmoid(data):
-        return full_layer.sigmoid(data)*(1 - full_layer.sigmoid(data))
+    # @staticmethod
+    # def sigmoid(data):
+    #     return 1/(1 + np.exp(-1*data))
+    #
+    # @staticmethod
+    # def d_sigmoid(data):
+    #     return full_layer.sigmoid(data)*(1 - full_layer.sigmoid(data))
 
     """ potrebni su mi slope tezina i podataka. S obzirom da je f(W,podatak) = Suma(W*podatak), po sloju/tezini, izvodi su im W ili podatak puta
     slope sloja pre trenutnog i jos learn_rate"""
     @staticmethod
     def full_backpropagation(d_prev_ly, this_layer, W, lr):
 
-        d_W = np.zeros((this_layer.shape[0], this_layer.shape[1], d_prev_ly.shape[1]))
+        d_W = np.zeros((this_layer.shape[1], d_prev_ly.shape[1]))
         d_data = np.zeros((this_layer.shape[0], this_layer.shape[1]))
         #d_bias = np.zeros((this_layer.shape[0], this_layer.shape[1], 1))
 
 
-        for i in range(this_layer.shape[0]):
-            # verovatno ovde greska, ili kod deklaracije d_W/data
-            d_W[i] = d_prev_ly[i].reshape(d_prev_ly[i].shape[0], 1).dot(this_layer[i].reshape(1, this_layer[i].shape[0])).T # ako padne error vrv je .T jedan od ova dva, vrv drugi
-            d_data[i] = W[i].dot(d_prev_ly[i]) * full_layer.d_sigmoid(this_layer[i])
-            #d_bias = isto ko kod convo. receno mi da vidim bez bias
+        # verovatno ovde greska, ili kod deklaracije d_W/data
+        d_W = this_layer.T.dot(d_prev_ly) # ako padne error vrv je .T jedan od ova dva, vrv drugi
+        d_data = d_prev_ly.dot(W.T) #* full_layer.d_sigmoid(this_layer)
+        #d_bias = isto ko kod convo. receno mi da vidim bez bias
 
-        W = W*0.85 + d_W * lr # gama = 0.85, videti output.py
+        #print(d_W[:5])
+        #W = W*0.85 + d_W * lr # gama = 0.85, videti output.py
+        W -= d_W*lr
+        #W = W*0.95
 
         return d_data, W

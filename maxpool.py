@@ -29,26 +29,23 @@ class MP():
         # biranje slike
         for i in range(self.data_num):
 
-            y1 = out_y = 0
-            x2 = self.filter_w # znam da jedino ovde nisam sklonio x,y2 ali se plasim da ih sklonim
-            y2 = self.filter_h
+            y = out_y = 0
 
             # kretanje po inputu
-            while y2 <= self.data_h:
+            while y + self.filter_h <= self.data_h:
 
-                x1 = out_x = 0
+                x = out_x = 0
 
-                while x2 <= self.data_w:
+                while x + self.filter_w <= self.data_w:
 
-                    self.out[i, out_y, out_x] = np.max(self.data[i, y1:y2, x1:x2]) # od odsecka inputa biramo max
+                    self.out[i, out_y, out_x] = np.max(self.data[i, y:y + self.filter_h, x:x + self.filter_w]) # od odsecka inputa biramo max
 
+                    x += self.stride_w
                     out_x += 1
-                    x1 += self.stride_w
-                    x2 += self.stride_w
 
+                y += self.stride_h
                 out_y += 1
-                y1 += self.stride_h
-                y2 += self.stride_h
+
 
 
     """ metoda sluzi za vracanje maksimumovog indeksa i koristi se u
@@ -90,5 +87,5 @@ class MP():
                     layer_x += 1
                 y += stride_h
                 layer_y += 1
-                
+
         return d_layer

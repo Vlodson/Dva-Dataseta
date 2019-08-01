@@ -48,6 +48,9 @@ class convo():
 
                 y += self.stride_h
                 out_y += 1
+
+        #self.out = np.sin(self.out)
+        self.out = self.out/np.mean(self.out)
 #===============================================================================
 
     """ U sustini izvod za convo je isti kao i za obican MLP, za filter je input
@@ -82,7 +85,7 @@ class convo():
 
                     # slope filtera je slope outputa conv na coord outputa * inputov deo podatka kojem odgovara filter
                     # MOZDA OVAJ += MOZE DA SJEBE MREZU, NISAM SIGURAN
-                    d_filter += this_layer[i, y:y + filter_h, x:x + filter_w] * d_prev_ly[i, layer_y, layer_x]
+                    d_filter -= this_layer[i, y:y + filter_h, x:x + filter_w] * d_prev_ly[i, layer_y, layer_x]
                     # slope dela inputa je filter * sa outputom koji mu odgovara
                     d_layer[i, y:y + filter_h, x:x + filter_w] += filter[2] * d_prev_ly[i, layer_y, layer_x]
 
@@ -95,8 +98,10 @@ class convo():
             # bias je samo suma slopa outputa za taj layer
             d_bias = np.sum(d_prev_ly[i])
 
-        filter[2] = filter[2]*0.85 + d_filter * lr # gama = 0.85, videti output.py
+        #filter[2] = filter[2]*0.85 + d_filter * lr # gama = 0.85, videti output.py
+        filter[2] -= d_filter * lr
+        #filter[2] = filter[2]*0.95
         bias += d_bias * lr
-
+        #print(d_filter[:5])
 
         return d_layer, filter, bias

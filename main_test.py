@@ -18,7 +18,6 @@ sound_labels = sound_labels[:num_data] # nzm da li treba ovo uopste
 #---
 
 labels = 4 # violina, sax, violoncelo, flauta
-i = 1
 
 ly1_img = 8
 ly1_snd = 8
@@ -47,22 +46,22 @@ bias2_snd = np.genfromtxt("W_b/Sound/bias2_snd.csv", delimiter = ',')
 #---
 
 W1_img = np.genfromtxt("W_b/Image/W1_img.csv", delimiter = ',')
-W1_img = W1_img.reshape(W1_img.shape[0], int(W1_img.shape[1]/ly1_img), ly1_img)
+W1_img = W1_img.reshape(W1_img.shape[0], W1_img.shape[1])
 
 W1_snd = np.genfromtxt("W_b/Sound/W1_snd.csv", delimiter = ',')
-W1_snd = W1_snd.reshape(W1_snd.shape[0], int(W1_snd.shape[1]/ly1_snd), ly1_snd)
+W1_snd = W1_snd.reshape(W1_snd.shape[0], W1_snd.shape[1])
 
 W2_img = np.genfromtxt("W_b/Image/W2_img.csv", delimiter = ',')
-W2_img = W2_img.reshape(W2_img.shape[0], int(W2_img.shape[1]/ly2), ly2)
+W2_img = W2_img.reshape(W2_img.shape[0], W2_img.shape[1])
 
 W2_snd = np.genfromtxt("W_b/Sound/W2_snd.csv", delimiter = ',')
-W2_snd = W2_snd.reshape(W2_snd.shape[0], int(W2_snd.shape[1]/ly2), ly2)
+W2_snd = W2_snd.reshape(W2_img.shape[0], W2_snd.shape[1])
 
 W2 = np.append(W2_img, W2_snd)
-W2 = W2.reshape(np.shape(images)[0], W2_img.shape[1]+W2_snd.shape[1], ly2)
+W2 = W2.reshape(W2_img.shape[0]+W2_snd.shape[0], ly2)
 
 Wo = np.genfromtxt("W_b/Wo.csv", delimiter = ',')
-Wo = Wo.reshape(Wo.shape[0], int(Wo.shape[1]/labels), labels)
+Wo = Wo.reshape(Wo.shape[0], Wo.shape[1])
 #===============================================================================
 
 
@@ -101,7 +100,7 @@ m2_snd.maxpooling()
 #---
 
 f1_img = full_layer(m2_img.out, ly1_img, W1_img) # ovde se vec radi forwardfeed, nema f za to
-f1_img.out[f1_img.out <= 0] = 0
+#f1_img.out[f1_img.out <= 0] = 0
 f1_snd = full_layer(m2_snd.out, ly1_snd, W1_snd)
 #---
 

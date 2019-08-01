@@ -17,7 +17,7 @@ for i in os.listdir("all_img"):
 
 images = np.array(images)
 images = images[:,:,:,0]
-images = images / np.max(images)
+images = images / np.mean(images)
 
 #===============================================================================
 

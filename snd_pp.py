@@ -7,7 +7,7 @@ import os
 pre_fft_sounds = []
 sound_labels = []
 
-for i in os.listdir("all_snd"):
+for i in os.listdir("all_snd"): # all_snd je stajao umesto test
     fs, data = wavfile.read("all_snd/{}".format(i))
     pre_fft_sounds.append(data)
 
@@ -44,4 +44,4 @@ for i in range(pre_fft_sounds.shape[0]):
 sounds = np.array(sounds)
 sounds = sounds.reshape(sounds.shape[0], sounds.shape[1]*sounds.shape[2], sounds.shape[3])
 
-sounds = (sounds - np.min(sounds)) / (np.max(sounds) - np.min(sounds))
+sounds = np.log(sounds + np.exp(-7)) # normalizacija spektrograma se radi kao log(x + c) de je c obicno e^-7 lepo normalizuje podatke

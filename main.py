@@ -9,6 +9,7 @@ from snd_pp import sounds, sound_labels
 print("zvuk ucitan")
 import datetime
 import matplotlib.pyplot as plt
+import os
 #===============================================================================
 
 # file writing
@@ -41,28 +42,31 @@ for i in range(len(sounds)):
     sound_labels[i] = sound_labels[rand]
     sound_labels[rand] = temp_s
 #===============================================================================
-num_data = images.shape[0] # upises obicno broj, ali ako hoces sve, onda data.shape[0]
+
+num_data = 5 # upises obicno broj, ali ako hoces sve, onda data.shape[0]
 
 images = images[:num_data]
 image_labels = image_labels[:num_data]
 
 sounds = sounds[:num_data]
 sound_labels = sound_labels[:num_data] # nzm da li treba ovo uopste
+
+print(image_labels[:5])
 #===============================================================================
 
 labels = 4 # violina, sax, violoncelo, flauta
-lr = 0.000000001 # learn rate, treba da bude mali za pomeranje po slopeovima
-learn_iter = 100 # za broj iteracija ucenja
+lr = 0.00000001 # learn rate, treba da bude mali za pomeranje po slopeovima
+learn_iter = 1 # za broj iteracija ucenja
 i = 1
 
 # prve random var
-filter1_img = (15, 15, np.random.randn(15,15))
-filter1_snd = (10, 22, np.random.randn(10,22))
+filter1_img = (15, 15, np.random.uniform(size = (15,15)))
+filter1_snd = (10, 22, np.random.uniform(size = (10,22)))
 bias1_img = np.zeros((1,1))
 bias1_snd = np.zeros((1,1))
 #---
-filter2_img = (3, 3, np.random.randn(3, 3))
-filter2_snd = (4, 8, np.random.randn(4, 8))
+filter2_img = (3, 3, np.random.uniform(size = (3, 3)))
+filter2_snd = (4, 8, np.random.uniform(size = (4, 8)))
 bias2_img = np.zeros((1,1))
 bias2_snd = np.zeros((1,1))
 
@@ -87,7 +91,6 @@ print("Start: ", datetime.datetime.now().time())
 
 while i <= learn_iter:
 
-    print(i)    
     # za ispis podataka dole
     Loss_prev = Loss_now
 
@@ -122,12 +125,12 @@ while i <= learn_iter:
 
     # random w koji mi trebaja samo jednom
     if i == 1:
-        W1_img = np.random.randn(images.shape[0], m2_img.out.shape[1]*m2_img.out.shape[2], ly1_img)
-        W1_snd = np.random.randn(sounds.shape[0], m2_snd.out.shape[1]*m2_snd.out.shape[2], ly1_snd)
+        W1_img = np.random.uniform(size = (m2_img.out.shape[1]*m2_img.out.shape[2], ly1_img))
+        W1_snd = np.random.uniform(size = (m2_snd.out.shape[1]*m2_snd.out.shape[2], ly1_snd))
     #---
 
     f1_img = full_layer(m2_img.out, ly1_img, W1_img) # ovde se vec radi forwardfeed, nema f za to
-    f1_img.out[f1_img.out <= 0] = 0
+    #f1_img.out[f1_img.out <= 0] = 0
     f1_snd = full_layer(m2_snd.out, ly1_snd, W1_snd) # ovde se vec radi forwardfeed, nema f za to
     #f1_snd.out[f1_snd.out <= 0] = 0
     #---
@@ -139,7 +142,7 @@ while i <= learn_iter:
     #---
 
     if i == 1:
-        W2 = np.random.randn(images.shape[0], f1_out.shape[1], ly2)
+        W2 = np.random.uniform(size = (f1_out.shape[1], ly2))
     #---
 
     f2 = full_layer(f1_out, ly2, W2)
@@ -147,21 +150,21 @@ while i <= learn_iter:
     #---
 
     if i == 1:
-        Wo = np.random.randn(images.shape[0], f2.out.shape[1], labels)
+        Wo = np.random.uniform(size = (f2.out.shape[1], labels))
     #---
 
     o = output(f2.out, Wo, labels, image_labels)
-    o.out[o.out <= 0] = 0
+    #o.out[o.out <= 0] = 0
     #===============================================
 
     """ BACKPROPAGATION """
     d_out, Wo = o.out_backpropagation(f2.out, o.out, image_labels, Wo, lr)
     #---
 
-    d_f2_img, W2_img = f2.full_backpropagation(d_out, f2.data[:, 0:f1_img.out.shape[1]], W2[:, :f1_img.out.shape[1], :], lr)
-    d_f2_snd, W2_snd = f2.full_backpropagation(d_out, f2.data[:, f1_img.out.shape[1]:f1_img.out.shape[1] + f1_snd.out.shape[1]], W2[:, f1_img.out.shape[1]:f1_img.out.shape[1] + f1_snd.out.shape[1], :], lr)
+    d_f2_img, W2_img = f2.full_backpropagation(d_out, f2.data[:, 0:f1_img.out.shape[1]], W2[:f1_img.out.shape[1], :], lr)
+    d_f2_snd, W2_snd = f2.full_backpropagation(d_out, f2.data[:, f1_img.out.shape[1]:f1_img.out.shape[1] + f1_snd.out.shape[1]], W2[f1_img.out.shape[1]:f1_img.out.shape[1] + f1_snd.out.shape[1], :], lr)
     W2 = np.append(W2_img, W2_snd)
-    W2 = W2.reshape(images.shape[0], f1_img.out.shape[1]+f1_snd.out.shape[1], ly2)
+    W2 = W2.reshape(f1_img.out.shape[1]+f1_snd.out.shape[1], ly2)
 
     # d_f2_img = d_f2[: ,0:f1_img.out.shape[1]]
     # d_f2_snd = d_f2[: ,f1_img.out.shape[1]:f1_snd.out.shape[1]]
@@ -190,11 +193,12 @@ while i <= learn_iter:
     d_c1_snd, filter1_snd, bias1_snd = c1_snd.convo_backpropagation(d_m1_snd, c1_snd.data, list(filter1_snd), bias1_snd, (8,8), lr)
     #===============================================
 
-    Loss_now = o.CE_Loss(o.out, image_labels)
+    Loss_now = o.CE_Loss(o.out, image_labels, o.out.shape[0])
     #---
 
     # za cuvanje najboljih tezina, tj. tamo gde je loss bio najmanji
     if Loss_now < Loss_prev:
+
         filter1_img_best = filter1_img
         filter2_img_best = filter2_img
 
@@ -226,27 +230,38 @@ while i <= learn_iter:
         print("Vreme: ", datetime.datetime.now().time())
         print("Loss = {}".format(Loss_now), "\n")
 
+
+    print(i, '\n')
     i += 1
+    print(o.out[:5], '\n')
 
 #===============================================================================
 print("Finish: ", datetime.datetime.now().time(), "\n")
 
-# za server je ovo iskomentarisano
-plt.plot(Loss_iter, Loss, 'b-')
-plt.show()
 
 write_data("W_b/Image/filter1_img.csv", filter1_img_best[2])
 write_data("W_b/Image/filter2_img.csv", filter2_img_best[2])
 write_data("W_b/Image/bias1_img.csv", bias1_img_best)
 write_data("W_b/Image/bias2_img.csv", bias2_img_best)
-write_data("W_b/Image/W1_img.csv", W1_img_best.reshape(W1_img_best.shape[0], W1_img_best.shape[1]*W1_img_best.shape[2]))
-write_data("W_b/Image/W2_img.csv", W2_img_best.reshape(W2_img_best.shape[0], W2_img_best.shape[1]*W2_img_best.shape[2]))
+write_data("W_b/Image/W1_img.csv", W1_img_best.reshape(W1_img_best.shape[0], W1_img_best.shape[1]))
+write_data("W_b/Image/W2_img.csv", W2_img_best.reshape(W2_img_best.shape[0], W2_img_best.shape[1]))
+print("Image podaci ispisani")
 
 write_data("W_b/Sound/filter1_snd.csv", filter1_snd_best[2])
 write_data("W_b/Sound/filter2_snd.csv", filter2_snd_best[2])
 write_data("W_b/Sound/bias1_snd.csv", bias1_snd_best)
 write_data("W_b/Sound/bias2_snd.csv", bias2_snd_best)
-write_data("W_b/Sound/W1_snd.csv", W1_snd_best.reshape(W1_snd_best.shape[0], W1_snd_best.shape[1]*W1_snd_best.shape[2]))
-write_data("W_b/Sound/W2_snd.csv", W2_snd_best.reshape(W2_snd_best.shape[0], W2_snd_best.shape[1]*W2_snd_best.shape[2]))
+write_data("W_b/Sound/W1_snd.csv", W1_snd_best.reshape(W1_snd_best.shape[0], W1_snd_best.shape[1]))
+write_data("W_b/Sound/W2_snd.csv", W2_snd_best.reshape(W2_snd_best.shape[0], W2_snd_best.shape[1]))
+print("Sound podaci ispisani")
 
-write_data("W_b/Wo.csv", Wo_best.reshape(Wo_best.shape[0], Wo_best.shape[1]*Wo_best.shape[2]))
+write_data("W_b/Wo.csv", Wo_best.reshape(Wo_best.shape[0], Wo_best.shape[1]))
+print("Wo ispisan")
+
+write_data("W_b/Loss.csv", Loss)
+print("Loss ispisan")
+
+plt.plot(Loss_iter, Loss, 'b-')
+plt.show()
+
+#os._exit(0)
